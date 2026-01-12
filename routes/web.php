@@ -31,6 +31,10 @@ Route::middleware('auth')->group(function () {
 
     // Rota do Financeiro
     Route::resource('caixa', CaixaController::class);
+    // Rotas de Mensalidade
+    Route::get('mensalidades', [App\Http\Controllers\MensalidadeController::class, 'index'])->name('mensalidades.index');
+    Route::post('mensalidades/gerar', [App\Http\Controllers\MensalidadeController::class, 'gerarMassivo'])->name('mensalidades.gerar');
+    Route::post('mensalidades/{id}/pagar', [App\Http\Controllers\MensalidadeController::class, 'pagar'])->name('mensalidades.pagar');
 });
 
 require __DIR__ . '/auth.php';
