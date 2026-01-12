@@ -4,27 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Desbravador;
 use App\Models\Unidade;
+use App\Models\Especialidade;
 use Illuminate\Http\Request;
 
 class DesbravadorController extends Controller
 {
-    // Lista todos os desbravadores
     public function index()
     {
-        // Traz os desbravadores já carregando a Unidade (para não pesar o banco)
         $desbravadores = Desbravador::with('unidade')->get();
         return view('desbravadores.index', compact('desbravadores'));
     }
 
-    // Mostra o formulário de cadastro
     public function create()
     {
-        // Precisamos da lista de unidades para o select box
         $unidades = Unidade::all();
         return view('desbravadores.create', compact('unidades'));
     }
 
-    // Salva no banco
     public function store(Request $request)
     {
         $request->validate([
@@ -39,5 +35,42 @@ class DesbravadorController extends Controller
 
         return redirect()->route('desbravadores.index')
             ->with('success', 'Desbravador cadastrado com sucesso!');
+    }
+
+    // --- MÉTODOS NOVOS PARA ESPECIALIDADES ---
+
+    public function gerenciarEspecialidades($id)
+    {
+        $desbravador = Desbravador::with('especialidades')->findOrFail($id);
+        $todasEspecialidades = Especialidade::all();
+
+        return view('desbravadores.especialidades', compact('desbravador', 'todasEspecialidades'));
+    }
+
+    public function salvarEspecialidade(Request $request, $id)
+    {
+        $request->validate([
+            'especialidade_id' => 'required|exists:especialidades,id',
+            'data_conclusao' => 'required|date',
+        ]);
+
+        $desbravador = Desbravador::findOrFail($id);
+
+        // O método attach cria o vínculo na tabela pivot
+        $desbravador->especialidades()->attach($request->especialidade_id, [
+            'data_conclusao' => $request->data_conclusao
+        ]);
+
+        return back()->with('success', 'Especialidade adicionada!');
+    }
+
+    public function removerEspecialidade($id, $especialidade_id)
+    {
+        $desbravador = Desbravador::findOrFail($id);
+
+        // O método detach remove o vínculo
+        $desbravador->especialidades()->detach($especialidade_id);
+
+        return back()->with('success', 'Especialidade removida!');
     }
 }

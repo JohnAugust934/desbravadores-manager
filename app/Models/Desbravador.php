@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Desbravador extends Model
 {
@@ -26,9 +27,16 @@ class Desbravador extends Model
         'ativo' => 'boolean',
     ];
 
-    // Relacionamento: Um desbravador pertence a uma Unidade
     public function unidade(): BelongsTo
     {
         return $this->belongsTo(Unidade::class);
+    }
+
+    // Relacionamento Novo: Desbravador tem muitas Especialidades
+    public function especialidades(): BelongsToMany
+    {
+        return $this->belongsToMany(Especialidade::class, 'desbravador_especialidade')
+            ->withPivot('data_conclusao') // Queremos acessar a data
+            ->withTimestamps();
     }
 }
