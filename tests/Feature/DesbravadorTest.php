@@ -7,7 +7,9 @@ use App\Models\User;
 
 test('pode criar um desbravador vinculado a uma unidade', function () {
     $user = User::factory()->create();
-    $unidade = Unidade::factory()->create();
+
+    // Cria uma unidade PERTENCENTE ao clube do usuário
+    $unidade = Unidade::factory()->create(['club_id' => $user->club_id]);
 
     $dados = [
         'nome' => 'Joãozinho Desbravador',
@@ -15,6 +17,7 @@ test('pode criar um desbravador vinculado a uma unidade', function () {
         'sexo' => 'M',
         'unidade_id' => $unidade->id,
         'classe_atual' => 'Amigo',
+        // O controller vai pegar o club_id do usuário logado automaticamente
     ];
 
     $response = $this->actingAs($user)->post('/desbravadores', $dados);
@@ -23,13 +26,16 @@ test('pode criar um desbravador vinculado a uma unidade', function () {
 
     $this->assertDatabaseHas('desbravadores', [
         'nome' => 'Joãozinho Desbravador',
-        'unidade_id' => $unidade->id
+        'unidade_id' => $unidade->id,
+        'club_id' => $user->club_id // Verifica se salvou no clube certo
     ]);
 });
 
 test('pode adicionar uma especialidade ao desbravador', function () {
     $user = User::factory()->create();
-    $desbravador = Desbravador::factory()->create();
+
+    // O Desbravador TEM que ser do mesmo clube do usuário
+    $desbravador = Desbravador::factory()->create(['club_id' => $user->club_id]);
     $especialidade = Especialidade::factory()->create();
 
     $response = $this->actingAs($user)
@@ -40,7 +46,6 @@ test('pode adicionar uma especialidade ao desbravador', function () {
 
     $response->assertSessionHasNoErrors();
 
-    // Verifica na tabela pivot (ligação)
     $this->assertDatabaseHas('desbravador_especialidade', [
         'desbravador_id' => $desbravador->id,
         'especialidade_id' => $especialidade->id,

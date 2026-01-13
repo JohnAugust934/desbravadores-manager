@@ -13,10 +13,18 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            // Relacionamento com Clube (Pode ser nulo se for o Super Admin)
+            $table->foreignId('club_id')->nullable()->constrained('clubs')->onDelete('cascade');
+
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // Papeis e Permissões
+            $table->string('role')->default('diretor'); // diretor, secretario, tesoureiro
+            $table->boolean('is_super_admin')->default(false); // Você!
+
             $table->rememberToken();
             $table->timestamps();
         });

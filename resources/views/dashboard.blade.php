@@ -12,7 +12,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Secretaria</span>
+                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                    {{ $stats['desbravadores'] }} Membros
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-dbv-blue">Desbravadores</h3>
             <p class="text-sm text-gray-500 mt-2">Gerenciar cadastro de membros, fichas médicas e dados pessoais.</p>
@@ -25,7 +27,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Estrutura</span>
+                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                    {{ $stats['unidades'] }} Unidades
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-dbv-red">Unidades</h3>
             <p class="text-sm text-gray-500 mt-2">Organização das unidades, conselheiros e capitães.</p>
@@ -38,7 +42,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Tesouraria</span>
+                <span class="text-xs font-bold {{ $stats['saldo'] >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100' }} uppercase px-2 py-1 rounded">
+                    R$ {{ number_format($stats['saldo'], 2, ',', '.') }}
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-green-600">Financeiro</h3>
             <p class="text-sm text-gray-500 mt-2">Controle de caixa, entradas, saídas e fluxo financeiro.</p>
@@ -51,7 +57,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Tesouraria</span>
+                <span class="text-xs font-bold text-yellow-700 bg-yellow-100 uppercase px-2 py-1 rounded">
+                    {{ $stats['mensalidades_pendentes'] }} Pendentes
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-yellow-600">Mensalidades</h3>
             <p class="text-sm text-gray-500 mt-2">Gerador de boletos mensais e controle de pagamentos.</p>
@@ -64,7 +72,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Inventário</span>
+                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                    {{ $stats['patrimonio_itens'] }} Itens
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-purple-600">Patrimônio</h3>
             <p class="text-sm text-gray-500 mt-2">Controle de bens, barracas, materiais e equipamentos.</p>
@@ -77,7 +87,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-gray-400 uppercase">Secretaria</span>
+                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                    {{ $stats['atas'] }} Registros
+                </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-indigo-600">Atas e Documentos</h3>
             <p class="text-sm text-gray-500 mt-2">Registro oficial de reuniões e decisões da diretoria.</p>

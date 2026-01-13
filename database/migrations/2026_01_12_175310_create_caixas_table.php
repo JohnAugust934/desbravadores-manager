@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('caixas', function (Blueprint $table) {
             $table->id();
-            $table->string('descricao'); // Ex: Venda de Pizza
-            $table->decimal('valor', 10, 2); // Ex: 150.00
-            $table->string('tipo'); // 'entrada' ou 'saida'
+            $table->foreignId('club_id')->constrained('clubs')->onDelete('cascade'); // <--- NOVO
+            $table->string('descricao');
+            $table->decimal('valor', 10, 2);
+            $table->string('tipo');
             $table->date('data_movimentacao');
-            $table->string('categoria')->nullable(); // Ex: Cantina, Material, Evento
+            $table->string('categoria')->nullable();
             $table->timestamps();
         });
     }

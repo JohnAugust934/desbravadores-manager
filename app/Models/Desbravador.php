@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\BelongsToClub;
 
 class Desbravador extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToClub;
 
     protected $table = 'desbravadores';
 
@@ -20,6 +21,7 @@ class Desbravador extends Model
         'unidade_id',
         'classe_atual',
         'ativo',
+        'club_id'
     ];
 
     protected $casts = [
@@ -32,11 +34,10 @@ class Desbravador extends Model
         return $this->belongsTo(Unidade::class);
     }
 
-    // Relacionamento Novo: Desbravador tem muitas Especialidades
     public function especialidades(): BelongsToMany
     {
         return $this->belongsToMany(Especialidade::class, 'desbravador_especialidade')
-            ->withPivot('data_conclusao') // Queremos acessar a data
+            ->withPivot('data_conclusao')
             ->withTimestamps();
     }
 }

@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToClub;
 
 class Caixa extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToClub;
 
     protected $fillable = [
         'descricao',
         'valor',
         'tipo',
         'data_movimentacao',
-        'categoria'
+        'categoria',
+        'club_id'
     ];
 
     protected $casts = [

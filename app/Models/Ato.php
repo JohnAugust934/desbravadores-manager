@@ -5,17 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\BelongsToClub;
 
 class Ato extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToClub;
 
     protected $fillable = [
         'data',
         'tipo',
         'descricao_resumida',
         'texto_completo',
-        'desbravador_id'
+        'desbravador_id',
+        'club_id'
     ];
 
     protected $casts = [

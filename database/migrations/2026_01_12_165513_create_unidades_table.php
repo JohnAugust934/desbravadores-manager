@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('unidades', function (Blueprint $table) {
             $table->id();
-            $table->string('nome'); // Ex: Águias
-            $table->string('grito_guerra')->nullable(); // Opcional
-            $table->string('conselheiro')->nullable(); // Nome do conselheiro
-            $table->timestamps(); // Cria colunas created_at e updated_at automaticamente
+            $table->foreignId('club_id')->constrained('clubs')->onDelete('cascade'); // <--- NOVO
+            $table->string('nome');
+            $table->string('conselheiro')->nullable();
+            $table->string('grito_guerra')->nullable();
+            $table->timestamps();
         });
     }
 

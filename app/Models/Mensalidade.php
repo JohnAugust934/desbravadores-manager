@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\BelongsToClub;
 
 class Mensalidade extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToClub;
 
     protected $fillable = [
         'desbravador_id',
@@ -16,7 +17,8 @@ class Mensalidade extends Model
         'ano',
         'valor',
         'data_pagamento',
-        'status'
+        'status',
+        'club_id'
     ];
 
     protected $casts = [

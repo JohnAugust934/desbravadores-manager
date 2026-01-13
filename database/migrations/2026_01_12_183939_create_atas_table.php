@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('atas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('club_id')->constrained('clubs')->onDelete('cascade'); // <--- NOVO
             $table->date('data_reuniao');
-            $table->string('tipo'); // Diretoria, Regular, Campori
-            $table->string('secretario_responsavel')->nullable(); // Quem escreveu
-            $table->text('participantes')->nullable(); // Lista de nomes
-            $table->text('conteudo'); // O texto da ata
+            $table->string('tipo');
+            $table->string('secretario_responsavel')->nullable();
+            $table->text('participantes')->nullable();
+            $table->text('conteudo');
             $table->timestamps();
         });
     }

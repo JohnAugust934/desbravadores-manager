@@ -74,23 +74,28 @@ class MensalidadeController extends Controller
 
     public function pagar($id)
     {
+        // CORREÇÃO: Usar 'with' para carregar o desbravador junto
         $mensalidade = Mensalidade::with('desbravador')->findOrFail($id);
 
-        if ($mensalidade->status == 'pago') {
+        if ($mensalidade->status === 'pago') {
             return back()->with('error', 'Esta mensalidade já foi paga.');
         }
 
-        // Transação de Banco de Dados: Ou faz tudo (Update + Caixa), ou não faz nada.
-        DB::transaction(function () use ($mensalidade) {
-            // 1. Atualiza a mensalidade
+        // Usamos transaction para garantir que ou faz tudo ou não faz nada
+        \DB::transaction(function () use ($mensalidade) {
+
+            // 1. Marca como paga
             $mensalidade->update([
                 'status' => 'pago',
                 'data_pagamento' => now()
             ]);
 
-            // 2. Lança no Caixa automaticamente
-            Caixa::create([
-                'descricao' => "Mensalidade " . $mensalidade->mes . "/" . $mensalidade->ano . " - " . $mensalidade->desbravador->nome,
+            // 2. Lança no Caixa
+            // Proteção extra: se por algum motivo o desbravador foi deletado, usa "Desbravador Removido"
+            $nomeDesbravador = $mensalidade->desbravador->nome ?? 'Desbravador Removido';
+
+            \App\Models\Caixa::create([
+                'descricao' => "Mensalidade - " . $nomeDesbravador,
                 'valor' => $mensalidade->valor,
                 'tipo' => 'entrada',
                 'categoria' => 'Mensalidade',
@@ -98,6 +103,6 @@ class MensalidadeController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Pagamento recebido e lançado no caixa!');
+        return back()->with('success', 'Mensalidade paga com sucesso!');
     }
 }

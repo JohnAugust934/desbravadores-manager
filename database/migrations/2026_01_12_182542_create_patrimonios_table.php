@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('patrimonios', function (Blueprint $table) {
             $table->id();
-            $table->string('item'); // Ex: Barraca Iglu 4 Pessoas
+            $table->foreignId('club_id')->constrained('clubs')->onDelete('cascade'); // <--- NOVO
+            $table->string('item');
             $table->integer('quantidade')->default(1);
-            $table->decimal('valor_estimado', 10, 2)->nullable(); // Quanto vale hoje?
+            $table->decimal('valor_estimado', 10, 2)->nullable();
             $table->date('data_aquisicao')->nullable();
-            $table->string('estado_conservacao'); // Novo, Bom, Regular, Ruim, Inservível
-            $table->string('local_armazenamento')->nullable(); // Ex: Armário A, Sede da Igreja
+            $table->string('estado_conservacao');
+            $table->string('local_armazenamento')->nullable();
             $table->text('observacoes')->nullable();
             $table->timestamps();
         });
