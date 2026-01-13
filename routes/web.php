@@ -88,6 +88,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('atas', AtaController::class);
         Route::resource('atos', AtoController::class);
 
+        // --- FICHA MÉDICA ---
+        Route::get('desbravadores/{id}/ficha-medica', [App\Http\Controllers\FichaMedicaController::class, 'edit'])->name('desbravadores.ficha-medica');
+        Route::post('desbravadores/{id}/ficha-medica', [App\Http\Controllers\FichaMedicaController::class, 'update'])->name('desbravadores.ficha-medica.update');
+
+        // NOVO: ROTA DE IMPRESSÃO
+        Route::get('desbravadores/{id}/ficha-medica/imprimir', [App\Http\Controllers\FichaMedicaController::class, 'imprimir'])->name('desbravadores.ficha-medica.print');
+        
         // Relatório
         Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
     });

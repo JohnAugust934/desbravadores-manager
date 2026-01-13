@@ -19,22 +19,33 @@
 
             <div class="bg-white p-6 rounded-lg shadow">
                 <h3 class="text-lg font-bold mb-4 text-gray-800">Convites Pendentes</h3>
-                <ul>
+                <ul class="divide-y divide-gray-100">
                     @foreach($invitations as $inv)
-                    <li class="flex justify-between items-center border-b py-2">
-                        <div>
-                            <span class="font-mono text-sm bg-gray-100 p-1 select-all">{{ route('club.setup', ['token' => $inv->token]) }}</span>
-                            <span class="text-xs text-gray-500 ml-2">({{ $inv->email ?? 'Qualquer email' }})</span>
+                    <li class="flex flex-col md:flex-row justify-between items-center py-3 gap-2">
+                        <div class="flex-1 w-full">
+                            <div class="flex items-center gap-2 mb-1">
+                                @if($inv->expires_at && $inv->expires_at->isPast())
+                                <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">EXPIRADO</span>
+                                @else
+                                <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded">ATIVO</span>
+                                @endif
+                                <span class="text-sm text-gray-600">{{ $inv->email ?? 'Sem email definido' }}</span>
+
+                                @if($inv->expires_at)
+                                <span class="text-xs text-gray-400 ml-2">Expira em: {{ $inv->expires_at->format('d/m/Y H:i') }}</span>
+                                @endif
+                            </div>
+
+                            <div class="flex items-center bg-gray-50 p-2 rounded border border-gray-200">
+                                <input type="text" readonly value="{{ route('club.setup', ['token' => $inv->token]) }}" class="bg-transparent border-none text-xs text-gray-600 w-full focus:ring-0 p-0" onclick="this.select()">
+                            </div>
                         </div>
                         <form action="{{ route('admin.invites.destroy', $inv->id) }}" method="POST">
                             @csrf @method('DELETE')
-                            <button class="text-red-500 text-sm hover:underline">Cancelar</button>
+                            <button class="text-red-500 text-sm hover:text-red-700 font-bold px-3 py-1 border border-red-200 rounded hover:bg-red-50 transition">Revogar</button>
                         </form>
                     </li>
                     @endforeach
-                    @if($invitations->isEmpty())
-                    <li class="text-gray-400 text-sm">Nenhum convite pendente.</li>
-                    @endif
                 </ul>
             </div>
 

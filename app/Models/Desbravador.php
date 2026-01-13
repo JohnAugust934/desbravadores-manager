@@ -40,4 +40,9 @@ class Desbravador extends Model
             ->withPivot('data_conclusao')
             ->withTimestamps();
     }
+
+    public function fichaMedica(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(FichaMedica::class);
+    }
 }
