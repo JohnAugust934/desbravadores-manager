@@ -13,6 +13,8 @@ use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClubSetupController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\DesbravadorEspecialidadeController; // Controller Novo
+use App\Http\Controllers\FichaMedicaController; // Controller Ficha Médica
 // Importações dos Models para o Dashboard
 use App\Models\Desbravador;
 use App\Models\Unidade;
@@ -76,25 +78,34 @@ Route::middleware('auth')->group(function () {
     // --- MÓDULO SECRETARIA (Diretor + Secretário) ---
     Route::middleware('can:acessar-secretaria')->group(function () {
         Route::resource('unidades', UnidadeController::class);
-        Route::resource('desbravadores', DesbravadorController::class);
+
+        // CORREÇÃO AQUI: Forçamos o parâmetro a ser 'desbravador' e não 'desbravadore'
+        Route::resource('desbravadores', DesbravadorController::class)
+            ->parameters(['desbravadores' => 'desbravador']);
+
         Route::resource('especialidades', EspecialidadeController::class);
 
-        // Sub-rotas de Especialidades
-        Route::get('desbravadores/{id}/especialidades', [DesbravadorController::class, 'gerenciarEspecialidades'])->name('desbravadores.especialidades');
-        Route::post('desbravadores/{id}/especialidades', [DesbravadorController::class, 'salvarEspecialidade'])->name('desbravadores.especialidades.store');
-        Route::delete('desbravadores/{id}/especialidades/{especialidade_id}', [DesbravadorController::class, 'removerEspecialidade'])->name('desbravadores.especialidades.destroy');
+        // Sub-rotas de Especialidades (Usando o novo Controller Dedicado)
+        Route::get('desbravadores/{desbravador}/especialidades', [DesbravadorEspecialidadeController::class, 'index'])
+            ->name('desbravadores.especialidades');
+
+        Route::post('desbravadores/{desbravador}/especialidades', [DesbravadorEspecialidadeController::class, 'store'])
+            ->name('desbravadores.especialidades.store');
+
+        Route::delete('desbravadores/{desbravador}/especialidades/{especialidade}', [DesbravadorEspecialidadeController::class, 'destroy'])
+            ->name('desbravadores.especialidades.destroy');
 
         // Atas e Atos
         Route::resource('atas', AtaController::class);
         Route::resource('atos', AtoController::class);
 
         // --- FICHA MÉDICA ---
-        Route::get('desbravadores/{id}/ficha-medica', [App\Http\Controllers\FichaMedicaController::class, 'edit'])->name('desbravadores.ficha-medica');
-        Route::post('desbravadores/{id}/ficha-medica', [App\Http\Controllers\FichaMedicaController::class, 'update'])->name('desbravadores.ficha-medica.update');
+        Route::get('desbravadores/{id}/ficha-medica', [FichaMedicaController::class, 'edit'])->name('desbravadores.ficha-medica');
+        Route::post('desbravadores/{id}/ficha-medica', [FichaMedicaController::class, 'update'])->name('desbravadores.ficha-medica.update');
 
-        // NOVO: ROTA DE IMPRESSÃO
-        Route::get('desbravadores/{id}/ficha-medica/imprimir', [App\Http\Controllers\FichaMedicaController::class, 'imprimir'])->name('desbravadores.ficha-medica.print');
-        
+        // ROTA DE IMPRESSÃO
+        Route::get('desbravadores/{id}/ficha-medica/imprimir', [FichaMedicaController::class, 'imprimir'])->name('desbravadores.ficha-medica.print');
+
         // Relatório
         Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
     });
