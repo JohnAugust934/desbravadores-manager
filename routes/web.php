@@ -13,9 +13,8 @@ use App\Http\Controllers\RelatorioController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ClubSetupController;
 use App\Http\Controllers\TeamController;
-use App\Http\Controllers\DesbravadorEspecialidadeController; // Controller Novo
-use App\Http\Controllers\FichaMedicaController; // Controller Ficha Médica
-// Importações dos Models para o Dashboard
+use App\Http\Controllers\DesbravadorEspecialidadeController;
+use App\Http\Controllers\FichaMedicaController;
 use App\Models\Desbravador;
 use App\Models\Unidade;
 use App\Models\Caixa;
@@ -34,12 +33,10 @@ Route::post('/setup', [ClubSetupController::class, 'store'])->name('club.store')
 
 // --- DASHBOARD PRINCIPAL ---
 Route::get('/dashboard', function () {
-    // Se for Super Admin, redireciona para o painel dele
     if (auth()->user()->is_super_admin) {
         return redirect()->route('admin.dashboard');
     }
 
-    // Calcula os dados para os cards (O escopo global filtra pelo clube do usuário)
     $stats = [
         'desbravadores' => Desbravador::count(),
         'unidades' => Unidade::count(),
@@ -77,15 +74,17 @@ Route::middleware('auth')->group(function () {
 
     // --- MÓDULO SECRETARIA (Diretor + Secretário) ---
     Route::middleware('can:acessar-secretaria')->group(function () {
-        Route::resource('unidades', UnidadeController::class);
+        // CORREÇÃO: Forçamos o parâmetro a ser 'unidade' (singular)
+        Route::resource('unidades', UnidadeController::class)
+            ->parameters(['unidades' => 'unidade']);
 
-        // CORREÇÃO AQUI: Forçamos o parâmetro a ser 'desbravador' e não 'desbravadore'
+        // CORREÇÃO: Forçamos o parâmetro a ser 'desbravador' e não 'desbravadore'
         Route::resource('desbravadores', DesbravadorController::class)
             ->parameters(['desbravadores' => 'desbravador']);
 
         Route::resource('especialidades', EspecialidadeController::class);
 
-        // Sub-rotas de Especialidades (Usando o novo Controller Dedicado)
+        // Sub-rotas de Especialidades
         Route::get('desbravadores/{desbravador}/especialidades', [DesbravadorEspecialidadeController::class, 'index'])
             ->name('desbravadores.especialidades');
 
@@ -99,25 +98,26 @@ Route::middleware('auth')->group(function () {
         Route::resource('atas', AtaController::class);
         Route::resource('atos', AtoController::class);
 
-        // --- FICHA MÉDICA ---
+        // Ficha Médica
         Route::get('desbravadores/{id}/ficha-medica', [FichaMedicaController::class, 'edit'])->name('desbravadores.ficha-medica');
         Route::post('desbravadores/{id}/ficha-medica', [FichaMedicaController::class, 'update'])->name('desbravadores.ficha-medica.update');
-
-        // ROTA DE IMPRESSÃO
         Route::get('desbravadores/{id}/ficha-medica/imprimir', [FichaMedicaController::class, 'imprimir'])->name('desbravadores.ficha-medica.print');
 
-        // Relatório
+        // Relatórios
         Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
     });
 
     // --- MÓDULO FINANCEIRO (Diretor + Tesoureiro) ---
     Route::middleware('can:acessar-tesouraria')->group(function () {
-        Route::resource('caixa', CaixaController::class);
+        // CORREÇÃO: Forçamos o parâmetro a ser 'caixa'
+        Route::resource('caixa', CaixaController::class)
+            ->parameters(['caixa' => 'caixa']);
+
         Route::get('mensalidades', [MensalidadeController::class, 'index'])->name('mensalidades.index');
         Route::post('mensalidades/gerar', [MensalidadeController::class, 'gerarMassivo'])->name('mensalidades.gerar');
         Route::post('mensalidades/{id}/pagar', [MensalidadeController::class, 'pagar'])->name('mensalidades.pagar');
 
-        // Relatório
+        // Relatórios
         Route::get('relatorios/financeiro', [RelatorioController::class, 'financeiro'])->name('relatorios.financeiro');
     });
 

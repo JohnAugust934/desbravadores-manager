@@ -3,41 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caixa;
-use Illuminate\Http\Request;
+use App\Http\Requests\CaixaRequest; // Novo Request
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class CaixaController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        // Ordena por data (mais recente primeiro)
+        // Ordena por data mais recente
         $lancamentos = Caixa::orderBy('data_movimentacao', 'desc')->get();
 
-        // Calcula o saldo total
-        $entradas = Caixa::where('tipo', 'entrada')->sum('valor');
-        $saidas = Caixa::where('tipo', 'saida')->sum('valor');
-        $saldoAtual = $entradas - $saidas;
+        // Cálculos simples para o topo da página
+        $totalEntradas = $lancamentos->where('tipo', 'entrada')->sum('valor');
+        $totalSaidas = $lancamentos->where('tipo', 'saida')->sum('valor');
+        $saldo = $totalEntradas - $totalSaidas;
 
-        return view('financeiro.caixa.index', compact('lancamentos', 'saldoAtual'));
+        return view('financeiro.caixa.index', compact('lancamentos', 'saldo', 'totalEntradas', 'totalSaidas'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('financeiro.caixa.create');
     }
 
-    public function store(Request $request)
+    public function store(CaixaRequest $request): RedirectResponse
     {
-        $request->validate([
-            'descricao' => 'required|string|max:255',
-            'valor' => 'required|numeric|min:0.01',
-            'tipo' => 'required|in:entrada,saida',
-            'data_movimentacao' => 'required|date',
-            'categoria' => 'nullable|string',
-        ]);
-
-        Caixa::create($request->all());
+        Caixa::create($request->validated());
 
         return redirect()->route('caixa.index')
-            ->with('success', 'Lançamento realizado com sucesso!');
+            ->with('success', 'Lançamento financeiro realizado com sucesso!');
+    }
+
+    // Geralmente Caixa não se edita para manter integridade, mas se seu sistema permite:
+    public function edit(Caixa $caixa): View
+    {
+        // O Route Model Binding já verificou se o $caixa pertence ao clube do usuário
+        return view('financeiro.caixa.edit', compact('caixa'));
+    }
+
+    public function update(CaixaRequest $request, Caixa $caixa): RedirectResponse
+    {
+        $caixa->update($request->validated());
+
+        return redirect()->route('caixa.index')
+            ->with('success', 'Lançamento atualizado!');
+    }
+
+    public function destroy(Caixa $caixa): RedirectResponse
+    {
+        $caixa->delete();
+
+        return redirect()->route('caixa.index')
+            ->with('success', 'Lançamento removido.');
     }
 }

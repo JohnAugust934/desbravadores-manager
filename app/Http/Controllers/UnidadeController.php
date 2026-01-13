@@ -3,61 +3,55 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unidade;
-use Illuminate\Http\Request;
+use App\Http\Requests\UnidadeRequest; // Novo Request
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class UnidadeController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $unidades = Unidade::withCount('desbravadores')->orderBy('nome')->get();
+        $unidades = Unidade::orderBy('nome')->get();
         return view('unidades.index', compact('unidades'));
     }
 
-    public function create()
+    public function create(): View
     {
         return view('unidades.create');
     }
 
-    public function store(Request $request)
+    public function store(UnidadeRequest $request): RedirectResponse
     {
-        $request->validate([
-            'nome' => 'required|string|max:255',
-            'conselheiro' => 'nullable|string|max:255',
-            'grito_guerra' => 'nullable|string',
-        ]);
+        // Mass Assignment protegido pelo validated()
+        Unidade::create($request->validated());
 
-        Unidade::create($request->all());
-
-        return redirect()->route('unidades.index')->with('success', 'Unidade criada com sucesso!');
+        return redirect()->route('unidades.index')
+            ->with('success', 'Unidade criada com sucesso!');
     }
 
-    public function show(Unidade $unidade)
+    public function edit(Unidade $unidade): View
     {
-        return view('unidades.show', compact('unidade'));
+        return view('unidades.edit', compact('unidade'));
     }
 
-    public function edit(Unidade $unidade)
+    public function update(UnidadeRequest $request, Unidade $unidade): RedirectResponse
     {
-        // Método edit futuro
+        $unidade->update($request->validated());
+
+        return redirect()->route('unidades.index')
+            ->with('success', 'Unidade atualizada com sucesso!');
     }
 
-    public function update(Request $request, Unidade $unidade)
+    public function destroy(Unidade $unidade): RedirectResponse
     {
-        // Método update futuro
-    }
-
-    public function destroy(Unidade $unidade)
-    {
-        // CORREÇÃO: Verificação via Código (Mais seguro que try/catch de banco)
-
-        // Verifica se existe algum desbravador vinculado a esta unidade
+        // Verifica se tem desbravadores antes de deletar (opcional, mas recomendado)
         if ($unidade->desbravadores()->exists()) {
-            return back()->with('error', 'Não é possível excluir esta unidade pois existem desbravadores vinculados a ela. Mova-os para outra unidade antes.');
+            return back()->with('error', 'Não é possível remover uma unidade que possui desbravadores vinculados.');
         }
 
-        // Se não tiver ninguém, pode apagar
         $unidade->delete();
 
-        return redirect()->route('unidades.index')->with('success', 'Unidade removida com sucesso!');
+        return redirect()->route('unidades.index')
+            ->with('success', 'Unidade removida com sucesso!');
     }
 }
