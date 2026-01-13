@@ -5,6 +5,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
+        @can('acessar-secretaria')
         <a href="{{ route('desbravadores.index') }}" class="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-dbv-blue transition-all duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 bg-blue-50 text-dbv-blue rounded-lg group-hover:bg-dbv-blue group-hover:text-white transition-colors">
@@ -35,6 +36,23 @@
             <p class="text-sm text-gray-500 mt-2">Organização das unidades, conselheiros e capitães.</p>
         </a>
 
+        <a href="{{ route('atas.index') }}" class="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-600 transition-all duration-200">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                    {{ $stats['atas'] }} Registros
+                </span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 group-hover:text-indigo-600">Atas e Documentos</h3>
+            <p class="text-sm text-gray-500 mt-2">Registro oficial de reuniões e decisões da diretoria.</p>
+        </a>
+        @endcan
+
+        @can('acessar-tesouraria')
         <a href="{{ route('caixa.index') }}" class="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-green-600 transition-all duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-600 group-hover:text-white transition-colors">
@@ -64,7 +82,9 @@
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-yellow-600">Mensalidades</h3>
             <p class="text-sm text-gray-500 mt-2">Gerador de boletos mensais e controle de pagamentos.</p>
         </a>
+        @endcan
 
+        @can('acessar-patrimonio')
         <a href="{{ route('patrimonio.index') }}" class="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-purple-600 transition-all duration-200">
             <div class="flex items-center justify-between mb-4">
                 <div class="p-3 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-colors">
@@ -79,21 +99,7 @@
             <h3 class="text-xl font-bold text-gray-800 group-hover:text-purple-600">Patrimônio</h3>
             <p class="text-sm text-gray-500 mt-2">Controle de bens, barracas, materiais e equipamentos.</p>
         </a>
-
-        <a href="{{ route('atas.index') }}" class="group bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-600 transition-all duration-200">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
-                </div>
-                <span class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
-                    {{ $stats['atas'] }} Registros
-                </span>
-            </div>
-            <h3 class="text-xl font-bold text-gray-800 group-hover:text-indigo-600">Atas e Documentos</h3>
-            <p class="text-sm text-gray-500 mt-2">Registro oficial de reuniões e decisões da diretoria.</p>
-        </a>
+        @endcan
 
     </div>
 </x-app-layout>

@@ -30,7 +30,7 @@ Route::get('/', function () {
 Route::get('/setup', [ClubSetupController::class, 'create'])->name('club.setup');
 Route::post('/setup', [ClubSetupController::class, 'store'])->name('club.store');
 
-// --- DASHBOARD PRINCIPAL (Com cálculo de estatísticas) ---
+// --- DASHBOARD PRINCIPAL ---
 Route::get('/dashboard', function () {
     // Se for Super Admin, redireciona para o painel dele
     if (auth()->user()->is_super_admin) {
@@ -60,42 +60,54 @@ Route::middleware('auth')->group(function () {
         Route::delete('/invites/{id}', [AdminController::class, 'destroyInvitation'])->name('invites.destroy');
     });
 
-    // --- PERFIL DE USUÁRIO ---
+    // --- PERFIL DE USUÁRIO (Acessível a todos) ---
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // --- GESTÃO DE EQUIPE (DIRETORIA) ---
-    Route::get('/equipe', [TeamController::class, 'index'])->name('team.index');
-    Route::get('/equipe/adicionar', [TeamController::class, 'create'])->name('team.create');
-    Route::post('/equipe', [TeamController::class, 'store'])->name('team.store');
-    Route::delete('/equipe/{id}', [TeamController::class, 'destroy'])->name('team.destroy');
+    // --- GESTÃO DE EQUIPE (Apenas Diretor) ---
+    Route::middleware('can:gerenciar-tudo')->group(function () {
+        Route::get('/equipe', [TeamController::class, 'index'])->name('team.index');
+        Route::get('/equipe/adicionar', [TeamController::class, 'create'])->name('team.create');
+        Route::post('/equipe', [TeamController::class, 'store'])->name('team.store');
+        Route::delete('/equipe/{id}', [TeamController::class, 'destroy'])->name('team.destroy');
+    });
 
-    // --- MODULOS DO CLUBE ---
-    Route::resource('unidades', UnidadeController::class);
-    Route::resource('desbravadores', DesbravadorController::class);
-    Route::resource('especialidades', EspecialidadeController::class);
+    // --- MÓDULO SECRETARIA (Diretor + Secretário) ---
+    Route::middleware('can:acessar-secretaria')->group(function () {
+        Route::resource('unidades', UnidadeController::class);
+        Route::resource('desbravadores', DesbravadorController::class);
+        Route::resource('especialidades', EspecialidadeController::class);
 
-    // Sub-rotas de Especialidades
-    Route::get('desbravadores/{id}/especialidades', [DesbravadorController::class, 'gerenciarEspecialidades'])->name('desbravadores.especialidades');
-    Route::post('desbravadores/{id}/especialidades', [DesbravadorController::class, 'salvarEspecialidade'])->name('desbravadores.especialidades.store');
-    Route::delete('desbravadores/{id}/especialidades/{especialidade_id}', [DesbravadorController::class, 'removerEspecialidade'])->name('desbravadores.especialidades.destroy');
+        // Sub-rotas de Especialidades
+        Route::get('desbravadores/{id}/especialidades', [DesbravadorController::class, 'gerenciarEspecialidades'])->name('desbravadores.especialidades');
+        Route::post('desbravadores/{id}/especialidades', [DesbravadorController::class, 'salvarEspecialidade'])->name('desbravadores.especialidades.store');
+        Route::delete('desbravadores/{id}/especialidades/{especialidade_id}', [DesbravadorController::class, 'removerEspecialidade'])->name('desbravadores.especialidades.destroy');
 
-    // Financeiro
-    Route::resource('caixa', CaixaController::class);
-    Route::get('mensalidades', [MensalidadeController::class, 'index'])->name('mensalidades.index');
-    Route::post('mensalidades/gerar', [MensalidadeController::class, 'gerarMassivo'])->name('mensalidades.gerar');
-    Route::post('mensalidades/{id}/pagar', [MensalidadeController::class, 'pagar'])->name('mensalidades.pagar');
+        // Atas e Atos
+        Route::resource('atas', AtaController::class);
+        Route::resource('atos', AtoController::class);
 
-    // Outros
-    Route::resource('patrimonio', PatrimonioController::class);
-    Route::resource('atas', AtaController::class);
-    Route::resource('atos', AtoController::class);
+        // Relatório
+        Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
+    });
 
-    // Relatórios
-    Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
-    Route::get('relatorios/financeiro', [RelatorioController::class, 'financeiro'])->name('relatorios.financeiro');
-    Route::get('relatorios/patrimonio', [RelatorioController::class, 'patrimonio'])->name('relatorios.patrimonio');
+    // --- MÓDULO FINANCEIRO (Diretor + Tesoureiro) ---
+    Route::middleware('can:acessar-tesouraria')->group(function () {
+        Route::resource('caixa', CaixaController::class);
+        Route::get('mensalidades', [MensalidadeController::class, 'index'])->name('mensalidades.index');
+        Route::post('mensalidades/gerar', [MensalidadeController::class, 'gerarMassivo'])->name('mensalidades.gerar');
+        Route::post('mensalidades/{id}/pagar', [MensalidadeController::class, 'pagar'])->name('mensalidades.pagar');
+
+        // Relatório
+        Route::get('relatorios/financeiro', [RelatorioController::class, 'financeiro'])->name('relatorios.financeiro');
+    });
+
+    // --- MÓDULO PATRIMÔNIO (Compartilhado) ---
+    Route::middleware('can:acessar-patrimonio')->group(function () {
+        Route::resource('patrimonio', PatrimonioController::class);
+        Route::get('relatorios/patrimonio', [RelatorioController::class, 'patrimonio'])->name('relatorios.patrimonio');
+    });
 });
 
 require __DIR__ . '/auth.php';
