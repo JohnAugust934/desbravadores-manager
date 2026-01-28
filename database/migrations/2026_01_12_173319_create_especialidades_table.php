@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('especialidades', function (Blueprint $table) {
             $table->id();
-            $table->string('nome'); // Ex: Fogueiras e Cozinha
-            $table->string('area'); // Ex: Habilidades Domésticas
+            $table->string('nome');
+            $table->string('area');
+            $table->string('cor_fundo')->nullable(); // <--- ADICIONE ESTA LINHA
             $table->timestamps();
         });
     }

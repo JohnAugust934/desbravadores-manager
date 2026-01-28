@@ -18,8 +18,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Substitua a rota simples do dashboard por esta com lógica:
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    // Carrega unidades e calcula pontuação
+    $ranking = \App\Models\Unidade::all()->map(function ($unidade) {
+        return [
+            'nome' => $unidade->nome,
+            'pontos' => $unidade->pontuacao_total,
+            'membros' => $unidade->desbravadores->count()
+        ];
+    })->sortByDesc('pontos')->values(); // Ordena do maior para o menor
+
+    return view('dashboard', compact('ranking'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -60,6 +70,10 @@ Route::middleware('auth')->group(function () {
     Route::get('relatorios/autorizacao/{id}', [RelatorioController::class, 'autorizacaoSaida'])->name('relatorios.autorizacao');
     Route::get('relatorios/financeiro', [RelatorioController::class, 'financeiro'])->name('relatorios.financeiro');
     Route::get('relatorios/patrimonio', [RelatorioController::class, 'patrimonio'])->name('relatorios.patrimonio');
+
+    // --- FREQUÊNCIA ---
+    Route::get('/frequencia/chamada', [App\Http\Controllers\FrequenciaController::class, 'create'])->name('frequencia.create');
+    Route::post('/frequencia/chamada', [App\Http\Controllers\FrequenciaController::class, 'store'])->name('frequencia.store');
 
     // --- ÁREA DO ADMINISTRADOR MASTER ---
     // Rotas para gerar convites (Apenas para o usuário Master)

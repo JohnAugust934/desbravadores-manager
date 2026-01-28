@@ -13,12 +13,12 @@ class Caixa extends Model
         'descricao',
         'valor',
         'tipo',
-        'data_movimentacao',
-        'categoria'
+        'data_movimentacao', // Nome correto da coluna
+        'categoria',
     ];
 
     protected $casts = [
         'data_movimentacao' => 'date',
-        'valor' => 'decimal:2'
+        'valor' => 'decimal:2',
     ];
 }

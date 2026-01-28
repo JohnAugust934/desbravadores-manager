@@ -17,4 +17,18 @@ class Unidade extends Model
     {
         return $this->hasMany(Desbravador::class);
     }
+
+    public function getPontuacaoTotalAttribute()
+    {
+        return $this->desbravadores->sum(function ($desbravador) {
+            return $desbravador->total_pontos;
+        });
+    }
+
+    // Opcional: Média por membro (para ser justo com unidades menores)
+    public function getPontuacaoMediaAttribute()
+    {
+        if ($this->desbravadores->count() === 0) return 0;
+        return $this->pontuacao_total / $this->desbravadores->count();
+    }
 }

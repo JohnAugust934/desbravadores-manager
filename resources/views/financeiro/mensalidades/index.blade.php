@@ -71,7 +71,9 @@
                                 <td class="px-5 py-5 bg-white text-sm">R$ {{ number_format($m->valor, 2, ',', '.') }}</td>
                                 <td class="px-5 py-5 bg-white text-sm">
                                     @if($m->status == 'pago')
-                                    <span class="text-green-600 font-bold bg-green-100 px-2 py-1 rounded">Pago em {{ $m->data_pagamento->format('d/m') }}</span>
+                                    <span class="text-green-600 font-bold bg-green-100 px-2 py-1 rounded">
+                                        Pago @if($m->data_pagamento) em {{ $m->data_pagamento->format('d/m') }} @endif
+                                    </span>
                                     @else
                                     <span class="text-red-600 font-bold bg-red-100 px-2 py-1 rounded">Pendente</span>
                                     @endif

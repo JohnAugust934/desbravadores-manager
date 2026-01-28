@@ -9,5 +9,9 @@ class Especialidade extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nome', 'area'];
+    protected $fillable = [
+        'nome',
+        'area',
+        'cor_fundo' // <--- ADICIONE ESTA LINHA
+    ];
 }
