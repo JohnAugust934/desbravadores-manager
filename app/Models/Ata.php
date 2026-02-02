@@ -10,14 +10,21 @@ class Ata extends Model
     use HasFactory;
 
     protected $fillable = [
+        'titulo',       // Adicionado
         'data_reuniao',
+        'hora_inicio',  // Adicionado
+        'hora_fim',     // Adicionado
+        'local',        // Adicionado
         'tipo',
         'secretario_responsavel',
         'participantes',
-        'conteudo'
+        'conteudo',
     ];
 
     protected $casts = [
         'data_reuniao' => 'date',
+        // Opcional: Casting para Carbon facilita manipulação de horas na view
+        'hora_inicio' => 'datetime:H:i',
+        'hora_fim' => 'datetime:H:i',
     ];
 }

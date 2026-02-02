@@ -11,11 +11,11 @@ class Ato extends Model
     use HasFactory;
 
     protected $fillable = [
+        'numero',    // Adicionado
         'data',
         'tipo',
-        'descricao_resumida',
-        'texto_completo',
-        'desbravador_id'
+        'descricao', // Alterado (removemos descricao_resumida e texto_completo)
+        'desbravador_id',
     ];
 
     protected $casts = [

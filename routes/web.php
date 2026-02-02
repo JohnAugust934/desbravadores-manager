@@ -1,24 +1,24 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UnidadeController;
-use App\Http\Controllers\DesbravadorController;
-use App\Http\Controllers\EspecialidadeController;
-use App\Http\Controllers\CaixaController;
-use App\Http\Controllers\MensalidadeController;
-use App\Http\Controllers\PatrimonioController;
 use App\Http\Controllers\AtaController;
 use App\Http\Controllers\AtoController;
-use App\Http\Controllers\RelatorioController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\CaixaController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProgressoController;
+use App\Http\Controllers\DesbravadorController;
+use App\Http\Controllers\EspecialidadeController;
 use App\Http\Controllers\EventoController;
-use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\FrequenciaController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\MensalidadeController;
+use App\Http\Controllers\PatrimonioController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProgressoController;
+use App\Http\Controllers\RelatorioController;
+use App\Http\Controllers\UnidadeController;
+use App\Http\Controllers\UsuarioController;
+use Illuminate\Support\Facades\Route;
 
 // --- ROTA PÚBLICA ---
 Route::get('/', function () {
@@ -78,10 +78,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/unidades/{unidade}', [UnidadeController::class, 'show'])->name('unidades.show');
 
     // Se o conselheiro precisar ver o perfil do desbravador (mas não editar todos os dados sensíveis)
-    // Por enquanto, deixamos o 'show' do desbravador acessível se souber o ID, 
+    // Por enquanto, deixamos o 'show' do desbravador acessível se souber o ID,
     // mas a edição completa está protegida no resource acima.
     Route::get('/desbravadores/{desbravador}', [DesbravadorController::class, 'show'])->name('desbravadores.show');
-
 
     // --- MÓDULO PEDAGÓGICO (Instrutores e Conselheiros também acessam) ---
     Route::middleware('can:pedagogico')->group(function () {
@@ -105,7 +104,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/frequencia/chamada', [FrequenciaController::class, 'store'])->name('frequencia.store');
     });
 
-
     // --- MÓDULO FINANCEIRO (Tesoureiro e Diretor) ---
     Route::middleware('can:financeiro')->group(function () {
         Route::resource('caixa', CaixaController::class);
@@ -117,15 +115,12 @@ Route::middleware('auth')->group(function () {
         Route::post('mensalidades/{id}/pagar', [MensalidadeController::class, 'pagar'])->name('mensalidades.pagar');
     });
 
-
     // --- MÓDULO DE EVENTOS ---
-    // Visualização: Todos (via menu)
+    // 1. Listagem Geral (Pode ficar aqui)
     Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
-    Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
-
-    // Gestão (Criar/Inscrever/Pagamento): Apenas quem tem permissão 'eventos' (Diretor, Secretaria, Tesoureiro)
+    // 2. MOVA ESTE BLOCO PARA CIMA (Rotas específicas primeiro)
     Route::middleware('can:eventos')->group(function () {
-        Route::get('/eventos/create', [EventoController::class, 'create'])->name('eventos.create');
+        Route::get('/eventos/create', [EventoController::class, 'create'])->name('eventos.create'); // <- Agora o Laravel acha esta primeiro!
         Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
         Route::get('/eventos/{evento}/edit', [EventoController::class, 'edit'])->name('eventos.edit');
         Route::put('/eventos/{evento}', [EventoController::class, 'update'])->name('eventos.update');
@@ -135,10 +130,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('eventos/{evento}/inscricao/{desbravador}', [EventoController::class, 'removerInscricao'])->name('eventos.remover-inscricao');
         Route::patch('eventos/{evento}/inscricao/{desbravador}', [EventoController::class, 'atualizarStatus'])->name('eventos.status');
 
-        // Autorização Específica do Evento
         Route::get('eventos/{evento}/autorizacao/{desbravador}', [EventoController::class, 'gerarAutorizacao'])->name('eventos.autorizacao');
     });
-
+    // 3. Rota Genérica / Wildcard (DEVE SER A ÚLTIMA DE EVENTOS)
+    // Qualquer coisa que não for 'create' cairá aqui (ex: /eventos/1)
+    Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
 
     // --- CENTRAL DE RELATÓRIOS (Acesso Misto) ---
     Route::prefix('relatorios')->name('relatorios.')->group(function () {
@@ -163,4 +159,4 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

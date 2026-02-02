@@ -10,18 +10,16 @@ return new class extends Migration
     {
         Schema::create('atos', function (Blueprint $table) {
             $table->id();
+            $table->string('numero'); // Adicionado (Ex: 001/2026)
             $table->date('data');
-            $table->string('tipo'); // Nomeação, Exoneração, Admissão, Disciplina, Outro
-            $table->string('descricao_resumida'); // Ex: Nomeação de Capitão
-            $table->text('texto_completo')->nullable(); // O texto oficial do ato
-            // Opcional: Vincular a um desbravador específico
+            $table->string('tipo'); // Nomeação, Exoneração...
+
+            // Alterado de 'descricao_resumida' para 'descricao' para bater com o formulário
+            // Mudamos para text para caber textos maiores
+            $table->text('descricao');
+
             $table->foreignId('desbravador_id')->nullable()->constrained('desbravadores')->nullOnDelete();
             $table->timestamps();
         });
-    }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('atos');
     }
 };

@@ -12,7 +12,8 @@ class AtaController extends Controller
         $query = Ata::orderBy('data_reuniao', 'desc');
 
         if ($request->filled('search')) {
-            $query->where('pauta', 'like', "%{$request->search}%")
+            // CORREÇÃO: Mudado de 'pauta' para 'titulo'
+            $query->where('titulo', 'like', "%{$request->search}%")
                 ->orWhere('conteudo', 'like', "%{$request->search}%");
         }
 
