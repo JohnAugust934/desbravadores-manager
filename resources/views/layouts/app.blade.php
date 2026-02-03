@@ -74,8 +74,10 @@
                     $inactiveClass = 'text-blue-100 hover:bg-white/10 hover:text-white hover:translate-x-1';
                 @endphp
 
+                {{-- ================= GERAL ================= --}}
                 <p class="px-3 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Geral</p>
 
+                {{-- 1. Painel --}}
                 <a href="{{ route('dashboard') }}"
                     class="{{ $linkClass }} {{ request()->routeIs('dashboard') ? $activeClass : $inactiveClass }}">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -85,6 +87,36 @@
                     </svg>
                     Painel
                 </a>
+
+                {{-- 2. Ranking (Dropdown) --}}
+                <div x-data="{ open: {{ request()->routeIs('ranking*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                        class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-blue-100 transition-colors duration-200 rounded-lg hover:bg-white/10 hover:text-white">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 {{ request()->routeIs('ranking*') ? 'text-white' : 'text-blue-300' }}"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                            Ranking
+                        </div>
+                        <svg :class="open ? 'rotate-180' : ''"
+                            class="w-4 h-4 transition-transform duration-200 text-blue-300" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak class="pl-11 pr-3 mt-1 space-y-1">
+                        <a href="{{ route('ranking.unidades') }}"
+                            class="block px-3 py-2 text-sm text-blue-200 transition-colors rounded-md hover:text-white hover:bg-white/5 {{ request()->routeIs('ranking.unidades') ? 'text-white bg-white/10' : '' }}">
+                            Por Unidade
+                        </a>
+                        <a href="{{ route('ranking.desbravadores') }}"
+                            class="block px-3 py-2 text-sm text-blue-200 transition-colors rounded-md hover:text-white hover:bg-white/5 {{ request()->routeIs('ranking.desbravadores') ? 'text-white bg-white/10' : '' }}">
+                            Por Desbravador
+                        </a>
+                    </div>
+                </div>
 
                 @can('eventos')
                     <a href="{{ route('eventos.index') }}"
@@ -98,19 +130,12 @@
                     </a>
                 @endcan
 
+
+                {{-- ================= SECRETARIA ================= --}}
                 @can('secretaria')
                     <p class="px-3 mt-6 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Secretaria</p>
 
-                    <a href="{{ route('desbravadores.index') }}"
-                        class="{{ $linkClass }} {{ request()->routeIs('desbravadores*') ? $activeClass : $inactiveClass }}">
-                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('desbravadores*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Desbravadores
-                    </a>
-
+                    {{-- 1. Meu Clube --}}
                     <a href="{{ route('club.edit') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('club.edit') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('club.edit') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -121,6 +146,40 @@
                         Meu Clube
                     </a>
 
+                    {{-- 2. Desbravadores --}}
+                    <a href="{{ route('desbravadores.index') }}"
+                        class="{{ $linkClass }} {{ request()->routeIs('desbravadores*') ? $activeClass : $inactiveClass }}">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('desbravadores*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Desbravadores
+                    </a>
+
+                    {{-- 3. Unidades (Movido para cá) --}}
+                    <a href="{{ route('unidades.index') }}"
+                        class="{{ $linkClass }} {{ request()->routeIs('unidades*') ? $activeClass : $inactiveClass }}">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('unidades*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Unidades
+                    </a>
+
+                    {{-- 4. Frequência (Novo) --}}
+                    <a href="{{ route('frequencia.create') }}"
+                        class="{{ $linkClass }} {{ request()->routeIs('frequencia*') ? $activeClass : $inactiveClass }}">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('frequencia*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        Frequência
+                    </a>
+
+                    {{-- 5. Documentos --}}
                     <div x-data="{ open: {{ request()->routeIs('atas*') || request()->routeIs('atos*') ? 'true' : 'false' }} }">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-blue-100 transition-colors duration-200 rounded-lg hover:bg-white/10 hover:text-white">
@@ -134,7 +193,8 @@
                             </div>
                             <svg :class="open ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-200"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                         <div x-show="open" x-cloak class="pl-11 pr-3 mt-1 space-y-1">
@@ -147,21 +207,13 @@
                     </div>
                 @endcan
 
-                @if (Illuminate\Support\Facades\Gate::check('unidades') || Illuminate\Support\Facades\Gate::check('pedagogico'))
-                    <a href="{{ route('unidades.index') }}"
-                        class="{{ $linkClass }} {{ request()->routeIs('unidades*') ? $activeClass : $inactiveClass }}">
-                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('unidades*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Unidades
-                    </a>
-                @endif
 
+                {{-- ================= FINANCEIRO ================= --}}
                 @can('financeiro')
                     <p class="px-3 mt-6 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Financeiro
                     </p>
+
+                    {{-- 1. Caixa --}}
                     <a href="{{ route('caixa.index') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('caixa*') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('caixa*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -171,6 +223,8 @@
                         </svg>
                         Caixa
                     </a>
+
+                    {{-- 2. Mensalidades --}}
                     <a href="{{ route('mensalidades.index') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('mensalidades*') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('mensalidades*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -180,6 +234,8 @@
                         </svg>
                         Mensalidades
                     </a>
+
+                    {{-- 3. Patrimônio --}}
                     <a href="{{ route('patrimonio.index') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('patrimonio*') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('patrimonio*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -191,9 +247,24 @@
                     </a>
                 @endcan
 
+
+                {{-- ================= PEDAGÓGICO ================= --}}
                 @can('pedagogico')
                     <p class="px-3 mt-6 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Pedagógico
                     </p>
+
+                    {{-- 1. Classes (Novo - Placeholder) --}}
+                    <a href="#"
+                        class="{{ $linkClass }} {{ request()->routeIs('classes*') ? $activeClass : $inactiveClass }}">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('classes*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        Classes
+                    </a>
+
+                    {{-- 2. Especialidades --}}
                     <a href="{{ route('especialidades.index') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('especialidades*') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('especialidades*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
@@ -207,6 +278,7 @@
                     </a>
                 @endcan
 
+                {{-- ================= RELATÓRIOS ================= --}}
                 <p class="px-3 mt-6 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Relatórios
                 </p>
                 <a href="{{ route('relatorios.index') }}"
@@ -219,6 +291,7 @@
                     Relatórios
                 </a>
 
+                {{-- ================= ADMIN MASTER ================= --}}
                 @can('master')
                     <div class="mt-8 pt-4 border-t border-white/10">
                         <p class="px-3 text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2">Admin Master</p>

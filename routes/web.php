@@ -136,6 +136,12 @@ Route::middleware('auth')->group(function () {
     // Qualquer coisa que não for 'create' cairá aqui (ex: /eventos/1)
     Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
 
+    // Rotas de Ranking (Agrupadas)
+    Route::prefix('ranking')->name('ranking.')->group(function () {
+        Route::get('/unidades', [App\Http\Controllers\RankingController::class, 'unidades'])->name('unidades');
+        Route::get('/desbravadores', [App\Http\Controllers\RankingController::class, 'desbravadores'])->name('desbravadores');
+    });
+
     // --- CENTRAL DE RELATÓRIOS (Acesso Misto) ---
     Route::prefix('relatorios')->name('relatorios.')->group(function () {
         // Painel Principal
