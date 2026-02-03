@@ -7,8 +7,27 @@
 
     <div class="space-y-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div
+            class="bg-gradient-to-r from-dbv-blue to-blue-900 rounded-2xl p-6 shadow-lg text-white relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-1/3 bg-white/5 skew-x-12 transform translate-x-12"></div>
 
+            <div class="flex flex-col md:flex-row items-center justify-between relative z-10">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-2xl font-bold mb-1">Registro de Frequência</h3>
+                    <p class="text-blue-100 text-sm">Realize a chamada das unidades, pontuação de uniforme e bíblia.</p>
+                </div>
+                <a href="{{ route('frequencia.create') }}"
+                    class="px-6 py-3 bg-dbv-yellow text-dbv-blue font-bold rounded-lg shadow hover:bg-yellow-400 hover:scale-105 transition transform flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Fazer Chamada Agora
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <div
                 class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 relative overflow-hidden group">
                 <div class="absolute right-0 top-0 h-full w-2 bg-dbv-blue"></div>
@@ -128,89 +147,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <div
-                class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-dbv-yellow" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        Ranking das Unidades
-                    </h3>
-                    <a href="{{ route('frequencia.create') }}"
-                        class="text-xs font-bold text-dbv-blue dark:text-blue-400 hover:underline uppercase tracking-wide">
-                        + Nova Pontuação
-                    </a>
-                </div>
-
-                @if (count($ranking) > 0)
-                    <div class="space-y-4">
-                        @foreach ($ranking as $index => $unidade)
-                            <div class="relative group">
-                                <div
-                                    class="flex items-center p-4 rounded-xl border transition-all duration-300 
-                                {{ $index === 0
-                                    ? 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-700/50 shadow-sm'
-                                    : 'bg-gray-50 dark:bg-slate-700/50 border-transparent hover:border-gray-200 dark:hover:border-slate-600' }}">
-
-                                    <div
-                                        class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full font-bold text-lg mr-4
-                                    {{ $index === 0
-                                        ? 'bg-gradient-to-br from-yellow-300 to-yellow-500 text-white shadow-md'
-                                        : ($index === 1
-                                            ? 'bg-gray-300 text-gray-700'
-                                            : ($index === 2
-                                                ? 'bg-orange-300 text-orange-800'
-                                                : 'bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-gray-300')) }}">
-                                        {{ $index + 1 }}º
-                                    </div>
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex justify-between items-end mb-2">
-                                            <span
-                                                class="font-bold text-gray-800 dark:text-gray-100 truncate text-base">{{ $unidade['nome'] }}</span>
-                                            <span
-                                                class="font-mono font-bold {{ $index === 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500 dark:text-gray-400' }}">
-                                                {{ $unidade['pontos'] }} <span
-                                                    class="text-xs font-normal opacity-70">pts</span>
-                                            </span>
-                                        </div>
-
-                                        <div
-                                            class="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2.5 overflow-hidden">
-                                            @php
-                                                $maxPontos =
-                                                    $ranking->first()['pontos'] > 0 ? $ranking->first()['pontos'] : 1;
-                                                $percent = ($unidade['pontos'] / $maxPontos) * 100;
-                                            @endphp
-                                            <div class="h-full rounded-full transition-all duration-1000 ease-out {{ $index === 0 ? 'bg-yellow-400' : 'bg-dbv-blue dark:bg-blue-500' }}"
-                                                style="width: {{ $percent }}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-10 flex flex-col items-center">
-                        <div
-                            class="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-500 dark:text-gray-400">Nenhuma pontuação registrada ainda.</p>
-                        <a href="{{ route('frequencia.create') }}"
-                            class="mt-2 text-sm font-bold text-dbv-blue hover:underline">Começar agora</a>
-                    </div>
-                @endif
-            </div>
-
-            <div class="space-y-6">
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <div
                     class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
@@ -260,12 +197,10 @@
                         <div class="flex items-end justify-between gap-2 h-40 pt-4">
                             @foreach ($graficoFrequencia as $dado)
                                 <div class="flex flex-col items-center w-full group relative">
-
                                     <div
                                         class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs rounded py-1 px-2 mb-1">
                                         {{ $dado['presentes'] }} presentes
                                     </div>
-
                                     <div
                                         class="relative w-full bg-gray-100 dark:bg-slate-700 rounded-t-lg flex items-end justify-center overflow-hidden h-32">
                                         <div class="w-full mx-1 bg-dbv-blue dark:bg-blue-500 rounded-t flex items-center justify-center transition-all duration-1000 ease-out shadow-sm group-hover:bg-blue-700 dark:group-hover:bg-blue-400"
@@ -275,7 +210,6 @@
                                             </span>
                                         </div>
                                     </div>
-
                                     <div
                                         class="mt-2 text-center border-t border-gray-200 dark:border-slate-600 w-full pt-1">
                                         <span

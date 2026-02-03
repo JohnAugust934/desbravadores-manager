@@ -16,7 +16,6 @@ class FrequenciaTest extends TestCase
     public function test_pode_acessar_tela_de_chamada()
     {
         $clube = Club::create(['nome' => 'Clube Teste', 'cidade' => 'SP']);
-        // Usamos Master para garantir que o acesso à tela funcione
         $user = User::factory()->create(['club_id' => $clube->id, 'role' => 'master']);
 
         $unidade = Unidade::factory()->create();
@@ -31,40 +30,36 @@ class FrequenciaTest extends TestCase
     {
         $clube = Club::create(['nome' => 'Clube Teste', 'cidade' => 'SP']);
 
-        // 1. Cria usuário Master (Acesso total garantido)
         $user = User::factory()->create([
             'club_id' => $clube->id,
-            'role' => 'master'
+            'role' => 'master',
         ]);
 
         $unidade = Unidade::factory()->create();
         $dbv = Desbravador::factory()->create(['unidade_id' => $unidade->id, 'ativo' => true]);
 
-        // 2. Envia dados simulando o formulário HTML
-        // O formato presencas[id][campo] é crucial
+        // Dados simulando o envio correto do formulário
         $dados = [
             'data' => now()->format('Y-m-d'),
-            'unidade_id' => $unidade->id,
-            'presencas' => [
+            // 'unidade_id' => ... REMOVIDO, pois o controller agora infere isso
+            'presencas' => [ // NOME CORRIGIDO de frequencia para presencas
                 $dbv->id => [
-                    'presente' => 'on', // Checkbox checked envia valor
+                    'presente' => 'on',
                     'pontual' => 'on',
                     'biblia' => 'on',
-                    'uniforme' => 'on'
-                ]
-            ]
+                    'uniforme' => 'on',
+                ],
+            ],
         ];
 
         $response = $this->actingAs($user)->post(route('frequencia.store'), $dados);
 
-        // 3. Verifica redirecionamento
         $response->assertRedirect(route('dashboard'));
 
-        // 4. Verifica banco de dados
         $this->assertDatabaseHas('frequencias', [
             'desbravador_id' => $dbv->id,
-            'presente' => true, // Laravel casta 'on' ou 1 para true no boolean
-            'pontual' => true
+            'presente' => true,
+            'pontual' => true,
         ]);
     }
 }

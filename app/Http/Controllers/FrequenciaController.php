@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Desbravador;
 use App\Models\Frequencia;
 use App\Models\Unidade;
 use Illuminate\Http\Request;
@@ -23,27 +24,36 @@ class FrequenciaController extends Controller
 
     public function store(Request $request)
     {
+        // REMOVIDO: 'unidade_id' => 'required'
+        // MOTIVO: O formulário pode conter múltiplas unidades (visão do Diretor/Master).
+        // A validação de permissão será feita item a item abaixo.
         $request->validate([
             'data' => 'required|date',
-            'unidade_id' => 'required|exists:unidades,id',
-            'presencas' => 'required|array'
+            'presencas' => 'required|array',
         ]);
 
-        $unidade = Unidade::findOrFail($request->unidade_id);
-
-        // Verifica permissão (Master/Diretor passam direto, Conselheiro valida nome)
-        if (Gate::denies('gerir-unidade', $unidade)) {
-            abort(403, 'Você não tem permissão para esta unidade.');
-        }
-
         foreach ($request->presencas as $id => $dados) {
+            // Buscamos o desbravador e sua unidade para checar permissão
+            $dbv = Desbravador::with('unidade')->find($id);
+
+            if (! $dbv) {
+                continue;
+            }
+
+            // Verifica permissão para a unidade deste desbravador específico
+            if (Gate::denies('gerir-unidade', $dbv->unidade)) {
+                // Se for um espertinho tentando burlar, abortamos ou apenas pulamos.
+                // Aqui optei por pular para não quebrar o salvamento em lote se houver erro pontual.
+                continue;
+            }
+
             Frequencia::updateOrCreate(
                 [
                     'desbravador_id' => $id,
-                    'data' => $request->data
+                    'data' => $request->data,
                 ],
                 [
-                    // isset() funciona para checkboxes que não enviam valor quando desmarcados
+                    // isset() verifica se o checkbox foi marcado
                     'presente' => isset($dados['presente']),
                     'pontual' => isset($dados['pontual']),
                     'biblia' => isset($dados['biblia']),
