@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\DB;
 
 class Desbravador extends Model
 {
@@ -21,13 +20,13 @@ class Desbravador extends Model
         'data_nascimento',
         'sexo',
         'unidade_id',
-        'classe_atual',
+        'classe_atual', // Agora é um ID (Foreign Key)
         'email',
         'telefone',
         'endereco',
         'nome_responsavel',
         'telefone_responsavel',
-        'numero_sus', // Novo campo
+        'numero_sus',
         'tipo_sanguineo',
         'alergias',
         'medicamentos_continuos',
@@ -42,6 +41,12 @@ class Desbravador extends Model
     public function unidade(): BelongsTo
     {
         return $this->belongsTo(Unidade::class);
+    }
+
+    // RELACIONAMENTO PRINCIPAL DA CLASSE
+    public function classe(): BelongsTo
+    {
+        return $this->belongsTo(Classe::class, 'classe_atual');
     }
 
     public function especialidades(): BelongsToMany
@@ -66,11 +71,18 @@ class Desbravador extends Model
         return $query->where('ativo', true);
     }
 
+    // Relacionamento de requisitos cumpridos
     public function requisitosCumpridos()
     {
         return $this->belongsToMany(Requisito::class, 'desbravador_requisito')
-            ->withPivot('data_conclusao', 'user_id')
+            ->withPivot('user_id', 'data_conclusao')
             ->withTimestamps();
+    }
+
+    // Helper para checar se completou um requisito específico
+    public function completouRequisito($requisitoId)
+    {
+        return $this->requisitosCumpridos()->where('requisito_id', $requisitoId)->exists();
     }
 
     /**
@@ -78,16 +90,19 @@ class Desbravador extends Model
      */
     public function getProgressoClasseAttribute()
     {
-        // Busca o objeto Classe baseada no nome salvo em string (ex: "Amigo")
-        $classe = Classe::where('nome', $this->classe_atual)->first();
+        // Se não tiver classe vinculada, retorna 0
+        if (! $this->classe) {
+            return 0;
+        }
 
-        if (!$classe) return 0;
+        $totalRequisitos = $this->classe->requisitos()->count();
 
-        $totalRequisitos = $classe->requisitos()->count();
-        if ($totalRequisitos == 0) return 0;
+        if ($totalRequisitos == 0) {
+            return 0;
+        }
 
         $cumpridos = $this->requisitosCumpridos()
-            ->where('classe_id', $classe->id)
+            ->where('classe_id', $this->classe->id)
             ->count();
 
         return round(($cumpridos / $totalRequisitos) * 100);

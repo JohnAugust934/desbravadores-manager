@@ -13,7 +13,6 @@ use App\Models\Evento;
 use App\Models\Frequencia;
 use App\Models\Mensalidade;
 use App\Models\Patrimonio;
-use App\Models\Requisito;
 use App\Models\Unidade;
 use App\Models\User;
 use Carbon\Carbon;
@@ -24,6 +23,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Garante que as classes existam ANTES de qualquer coisa
+        $this->call(ClassesSeeder::class);
+
+        // Carrega as classes em memória para usar os IDs depois (Otimização)
+        $classesCache = Classe::all();
+
         // ---------------------------------------------------------
         // 1. CLUBE
         // ---------------------------------------------------------
@@ -93,34 +98,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('✅ Unidades e seus respectivos Conselheiros criados.');
 
         // ---------------------------------------------------------
-        // 4. PEDAGÓGICO
+        // 4. PEDAGÓGICO (ESPECIALIDADES) - CLASSES JÁ FORAM NO INÍCIO
         // ---------------------------------------------------------
-
-        $dadosClasses = [
-            ['nome' => 'Amigo', 'cor' => '#3B82F6', 'reqs' => ['Ter 10 anos completos', 'Saber o Hino Nacional', 'Ler o livro do ano', 'Saber o Voto e a Lei']],
-            ['nome' => 'Companheiro', 'cor' => '#F59E0B', 'reqs' => ['Ter 11 anos completos', 'Memorizar livros da Bíblia', 'Demonstrar nós básicos', 'Participar de caminhada de 5km']],
-            ['nome' => 'Pesquisador', 'cor' => '#10B981', 'reqs' => ['Ter 12 anos completos', 'Estudar os Evangelhos', 'Identificar 3 constelações', 'Fazer fogo sem fósforo']],
-            ['nome' => 'Pioneiro', 'cor' => '#6B7280', 'reqs' => ['Ter 13 anos completos', 'Construir móveis de acampamento', 'Liderar devocional', 'Participar de projeto comunitário']],
-            ['nome' => 'Excursionista', 'cor' => '#8B5CF6', 'reqs' => ['Ter 14 anos completos', 'Planejar cardápio de acampamento', 'Primeiros socorros avançado', 'Pernoite ao ar livre']],
-            ['nome' => 'Guia', 'cor' => '#EF4444', 'reqs' => ['Ter 15 anos completos', 'Liderar uma unidade por 3 meses', 'Completar especialidade de Ordem Unida', 'Organizar evento social']],
-        ];
-
-        $classesModels = collect();
-        foreach ($dadosClasses as $idx => $dado) {
-            $classe = Classe::firstOrCreate(['nome' => $dado['nome']], [
-                'cor' => $dado['cor'],
-                'ordem' => $idx + 1,
-            ]);
-            $classesModels->push($classe);
-
-            foreach ($dado['reqs'] as $i => $desc) {
-                Requisito::firstOrCreate(['descricao' => $desc], [
-                    'classe_id' => $classe->id,
-                    'codigo' => substr($dado['nome'], 0, 1).'-'.($i + 1),
-                    'categoria' => 'Gerais',
-                ]);
-            }
-        }
 
         $areas = ['ADRA', 'Artes e Habilidades Manuais', 'Estudo da Natureza', 'Atividades Recreativas', 'Saúde e Ciência', 'Atividades Missionárias'];
         $nomesEspecialidades = [
@@ -138,7 +117,7 @@ class DatabaseSeeder extends Seeder
                 'cor_fundo' => fake()->hexColor(),
             ]));
         }
-        $this->command->info('✅ Classes e Especialidades populadas.');
+        $this->command->info('✅ Especialidades populadas.');
 
         // ---------------------------------------------------------
         // 5. DESBRAVADORES
@@ -150,13 +129,21 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < rand(6, 8); $i++) {
                 $sexo = fake()->randomElement(['M', 'F']);
 
+                // CORREÇÃO CRÍTICA AQUI:
+                // Sorteia um nome de classe, depois busca o ID correspondente
+                $nomeClasseSorteada = fake()->randomElement(['Amigo', 'Companheiro', 'Pesquisador', 'Pioneiro']);
+                $classeSorteada = $classesCache->where('nome', $nomeClasseSorteada)->first();
+
                 $dbv = Desbravador::create([
                     'ativo' => true,
                     'nome' => fake()->name($sexo == 'M' ? 'male' : 'female'),
                     'data_nascimento' => fake()->dateTimeBetween('-15 years', '-10 years'),
                     'sexo' => $sexo,
                     'unidade_id' => $unidade->id,
-                    'classe_atual' => fake()->randomElement(['Amigo', 'Companheiro', 'Pesquisador', 'Pioneiro']),
+
+                    // AQUI ESTAVA O ERRO: Agora passamos o ID, não a string
+                    'classe_atual' => $classeSorteada ? $classeSorteada->id : null,
+
                     'email' => fake()->unique()->safeEmail(),
                     'telefone' => fake()->phoneNumber(),
                     'endereco' => fake()->address(),
@@ -175,9 +162,8 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 // Progresso
-                $classeObj = $classesModels->where('nome', $dbv->classe_atual)->first();
-                if ($classeObj) {
-                    $reqs = $classeObj->requisitos->random(rand(1, 2));
+                if ($classeSorteada) {
+                    $reqs = $classeSorteada->requisitos->random(rand(1, 2));
                     foreach ($reqs as $req) {
                         $dbv->requisitosCumpridos()->attach($req->id, [
                             'user_id' => $diretor->id,
@@ -238,7 +224,6 @@ class DatabaseSeeder extends Seeder
         }
 
         // MENSALIDADES (CORRIGIDO PARA EVITAR ERRO DE DIA 31)
-        // Usamos startOfMonth() para garantir que a data seja sempre dia 01
         $meses = [
             now()->startOfMonth()->subMonths(2),
             now()->startOfMonth()->subMonth(),
@@ -292,12 +277,9 @@ class DatabaseSeeder extends Seeder
                 'titulo' => 'Reunião Administrativa nº '.($i + 1),
                 'tipo' => fake()->randomElement(['Regular', 'Diretoria', 'Planejamento']),
                 'data_reuniao' => fake()->dateTimeBetween('-6 months', 'now'),
-
-                // CORREÇÃO: Campos obrigatórios adicionados
                 'hora_inicio' => fake()->time('H:i'),
                 'hora_fim' => fake()->time('H:i'),
                 'local' => 'Sede do Clube',
-
                 'secretario_responsavel' => 'Secretária Ana',
                 'participantes' => 'Diretoria completa.',
                 'conteudo' => fake()->paragraphs(3, true),
@@ -319,7 +301,6 @@ class DatabaseSeeder extends Seeder
         // ---------------------------------------------------------
         // 10. FREQUÊNCIA
         // ---------------------------------------------------------
-        // FREQUÊNCIA (CORRIGIDO PARA EVITAR ERRO DE DIA 31)
         $datasChamada = [
             Carbon::now()->startOfWeek(Carbon::SUNDAY),
             Carbon::now()->subWeeks(1)->startOfWeek(Carbon::SUNDAY),

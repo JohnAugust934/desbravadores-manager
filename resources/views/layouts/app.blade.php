@@ -276,8 +276,8 @@
                     <p class="px-3 mt-6 text-[10px] font-bold text-blue-300/80 uppercase tracking-wider mb-2">Pedagógico
                     </p>
 
-                    {{-- 1. Classes (Novo - Placeholder) --}}
-                    <a href="#"
+                    {{-- 1. Classes (Atualizado) --}}
+                    <a href="{{ route('classes.index') }}"
                         class="{{ $linkClass }} {{ request()->routeIs('classes*') ? $activeClass : $inactiveClass }}">
                         <svg class="w-5 h-5 mr-3 {{ request()->routeIs('classes*') ? 'text-white' : 'text-blue-300 group-hover:text-white' }}"
                             fill="none" viewBox="0 0 24 24" stroke="currentColor">

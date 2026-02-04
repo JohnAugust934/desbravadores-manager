@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Classe;
 use App\Models\Club;
 use App\Models\Desbravador;
 use App\Models\Unidade;
@@ -15,27 +16,36 @@ class DesbravadorTest extends TestCase
 
     public function test_pode_criar_um_desbravador_com_campos_obrigatorios()
     {
+        // 1. Preparação
         $clube = Club::create(['nome' => 'Clube Teste', 'cidade' => 'SP']);
+        // Role 'secretario' (masculino) para passar na Policy/Gate
         $user = User::factory()->create(['club_id' => $clube->id, 'role' => 'secretario']);
-        $unidade = Unidade::factory()->create();
 
+        $unidade = Unidade::factory()->create();
+        $classe = Classe::factory()->create(); // Cria uma classe válida
+
+        // 2. Ação
         $response = $this->actingAs($user)->post(route('desbravadores.store'), [
             'nome' => 'João Desbravador',
-            'data_nascimento' => '2010-05-10',
+            'data_nascimento' => '2010-01-01',
             'sexo' => 'M',
             'unidade_id' => $unidade->id,
-            'classe_atual' => 'Amigo',
+            'classe_atual' => $classe->id, // Envia o ID da classe
             'email' => 'joao@teste.com',
-            'nome_responsavel' => 'Maria Mãe',
+            'nome_responsavel' => 'Mãe do João',
             'telefone_responsavel' => '11999999999',
             'numero_sus' => '12345678900',
-            'endereco' => 'Rua Teste, 123' // Adicionado campo obrigatório
+            'endereco' => 'Rua Teste, 123',
+            // Campos opcionais não enviados
         ]);
 
+        // 3. Verificação
+        $response->assertSessionHasNoErrors(); // Garante que não houve erro de validação silencioso
         $response->assertRedirect(route('desbravadores.index'));
+
         $this->assertDatabaseHas('desbravadores', [
             'nome' => 'João Desbravador',
-            'numero_sus' => '12345678900'
+            'classe_atual' => $classe->id,
         ]);
     }
 
@@ -44,12 +54,15 @@ class DesbravadorTest extends TestCase
         $clube = Club::create(['nome' => 'Clube Teste', 'cidade' => 'SP']);
         $user = User::factory()->create(['club_id' => $clube->id, 'role' => 'secretario']);
         $unidade = Unidade::factory()->create();
+        $classe = Classe::factory()->create();
 
         $response = $this->actingAs($user)->post(route('desbravadores.store'), [
-            'nome' => 'Incompleto',
+            'nome' => 'João Sem Dados',
             'data_nascimento' => '2010-01-01',
+            'sexo' => 'M',
             'unidade_id' => $unidade->id,
-            // Faltando campos
+            'classe_atual' => $classe->id,
+            // Faltando SUS e Responsável propositalmente
         ]);
 
         $response->assertSessionHasErrors(['numero_sus', 'nome_responsavel']);
@@ -59,33 +72,33 @@ class DesbravadorTest extends TestCase
     {
         $clube = Club::create(['nome' => 'Clube Teste', 'cidade' => 'SP']);
         $user = User::factory()->create(['club_id' => $clube->id, 'role' => 'secretario']);
-        $unidade = Unidade::factory()->create();
 
-        $dbv = Desbravador::factory()->create([
-            'unidade_id' => $unidade->id,
-            'numero_sus' => '111',
-            'nome_responsavel' => 'Pai',
-            'endereco' => 'Rua Antiga'
+        // A factory agora usa ClasseFactory automaticamente, gerando ID válido
+        $desbravador = Desbravador::factory()->create();
+
+        $novaClasse = Classe::factory()->create(); // Cria nova classe para troca
+
+        $response = $this->actingAs($user)->put(route('desbravadores.update', $desbravador), [
+            'nome' => 'João Editado',
+            'data_nascimento' => $desbravador->data_nascimento->format('Y-m-d'),
+            'sexo' => 'M',
+            'unidade_id' => $desbravador->unidade_id,
+            'classe_atual' => $novaClasse->id, // Trocando de classe pelo ID
+            'ativo' => true,
+            'email' => $desbravador->email,
+            'nome_responsavel' => $desbravador->nome_responsavel,
+            'telefone_responsavel' => $desbravador->telefone_responsavel,
+            'numero_sus' => $desbravador->numero_sus,
+            'endereco' => $desbravador->endereco,
         ]);
 
-        $response = $this->actingAs($user)->put(route('desbravadores.update', $dbv->id), [
-            'nome' => $dbv->nome,
-            'data_nascimento' => $dbv->data_nascimento->format('Y-m-d'),
-            'sexo' => $dbv->sexo,
-            'unidade_id' => $unidade->id,
-            'classe_atual' => $dbv->classe_atual,
-            'email' => 'novo@email.com',
-            'nome_responsavel' => 'Pai',
-            'telefone_responsavel' => '00000000',
-            'numero_sus' => '99999',
-            'endereco' => 'Rua Nova, 100' // Adicionado campo obrigatório
-        ]);
-
-        $response->assertRedirect(route('desbravadores.show', $dbv));
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('desbravadores.show', $desbravador));
 
         $this->assertDatabaseHas('desbravadores', [
-            'id' => $dbv->id,
-            'numero_sus' => '99999',
+            'id' => $desbravador->id,
+            'nome' => 'João Editado',
+            'classe_atual' => $novaClasse->id,
         ]);
     }
 }

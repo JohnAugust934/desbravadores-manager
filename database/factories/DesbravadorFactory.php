@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Classe;
 use App\Models\Unidade;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -9,13 +10,29 @@ class DesbravadorFactory extends Factory
 {
     public function definition(): array
     {
+        // Garante que existe uma classe para vincular
+        $classe = Classe::inRandomOrder()->first() ?? Classe::factory()->create();
+
+        // Garante que existe uma unidade
+        $unidade = Unidade::inRandomOrder()->first() ?? Unidade::factory()->create();
+
         return [
             'nome' => $this->faker->name(),
-            'data_nascimento' => $this->faker->date(),
+            'data_nascimento' => $this->faker->dateTimeBetween('-15 years', '-10 years')->format('Y-m-d'),
             'sexo' => $this->faker->randomElement(['M', 'F']),
-            'classe_atual' => $this->faker->randomElement(['Amigo', 'Companheiro', 'Pesquisador']),
             'ativo' => true,
-            'unidade_id' => Unidade::factory(), // Cria uma unidade automaticamente se não passar uma
+            'unidade_id' => $unidade->id,
+            'classe_atual' => $classe->id, // <--- Agora usa o ID corretamente
+            'email' => $this->faker->unique()->safeEmail(),
+            'telefone' => $this->faker->phoneNumber(),
+            'endereco' => $this->faker->address(),
+            'nome_responsavel' => $this->faker->name(),
+            'telefone_responsavel' => $this->faker->phoneNumber(),
+            'numero_sus' => $this->faker->numerify('###########'),
+            'tipo_sanguineo' => $this->faker->randomElement(['A+', 'O+']),
+            'alergias' => null,
+            'medicamentos_continuos' => null,
+            'plano_saude' => null,
         ];
     }
 }

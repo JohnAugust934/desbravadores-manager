@@ -11,8 +11,15 @@ class Classe extends Model
 
     protected $fillable = ['nome', 'cor', 'ordem'];
 
+    // Uma classe tem muitos requisitos
     public function requisitos()
     {
         return $this->hasMany(Requisito::class);
+    }
+
+    // Ajudante para pegar o progresso geral da classe
+    public function totalRequisitos()
+    {
+        return $this->requisitos()->count();
     }
 }

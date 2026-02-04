@@ -15,4 +15,12 @@ class Requisito extends Model
     {
         return $this->belongsTo(Classe::class);
     }
+
+    // Relação com desbravadores que completaram este requisito
+    public function desbravadores()
+    {
+        return $this->belongsToMany(Desbravador::class, 'desbravador_requisito')
+            ->withPivot('user_id', 'data_conclusao')
+            ->withTimestamps();
+    }
 }
