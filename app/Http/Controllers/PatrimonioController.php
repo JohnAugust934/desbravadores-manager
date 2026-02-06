@@ -10,26 +10,40 @@ class PatrimonioController extends Controller
 {
     public function index(Request $request)
     {
-        // Totais para os Widgets
-        $totalItens = Patrimonio::sum('quantidade');
-        $valorTotal = Patrimonio::sum(DB::raw('valor_estimado * quantidade'));
+        $search = $request->input('search');
 
-        // CORREÇÃO: 'estado' mudou para 'estado_conservacao'
-        $itensRuins = Patrimonio::whereIn('estado_conservacao', ['Ruim', 'Inservível'])->count();
+        // Query Base
+        $query = Patrimonio::query();
 
-        // Query Principal com Busca
-        $query = Patrimonio::orderBy('item');
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('item', 'like', "%{$request->search}%")
-                    ->orWhere('local_armazenamento', 'like', "%{$request->search}%");
+        // Busca Inteligente (Case Insensitive)
+        if ($search) {
+            $term = strtolower($search);
+            $query->where(function ($q) use ($term) {
+                $q->where(DB::raw('lower(item)'), 'like', "%{$term}%") // Corrigido de 'nome' para 'item'
+                    ->orWhere(DB::raw('lower(observacoes)'), 'like', "%{$term}%")
+                    ->orWhere(DB::raw('lower(local_armazenamento)'), 'like', "%{$term}%");
             });
         }
 
-        $patrimonios = $query->paginate(10);
+        // Ordenação Padrão
+        $patrimonios = $query->orderBy('item', 'asc')->paginate(10)->withQueryString();
 
-        return view('patrimonio.index', compact('patrimonios', 'totalItens', 'valorTotal', 'itensRuins'));
+        // KPIs
+        $totalItens = Patrimonio::sum('quantidade'); // Soma quantidade física, não linhas
+        $valorTotal = Patrimonio::sum(DB::raw('valor_estimado * quantidade')); // Valor total real
+
+        // Estado de conservação (ajuste conforme os valores reais do banco)
+        $itensBons = Patrimonio::whereIn('estado_conservacao', ['Novo', 'Bom', 'Ótimo'])->sum('quantidade');
+        $itensRuins = Patrimonio::whereIn('estado_conservacao', ['Ruim', 'Péssimo', 'Inservível'])->sum('quantidade');
+
+        return view('patrimonio.index', compact(
+            'patrimonios',
+            'search',
+            'totalItens',
+            'valorTotal',
+            'itensBons',
+            'itensRuins'
+        ));
     }
 
     public function create()
@@ -39,20 +53,20 @@ class PatrimonioController extends Controller
 
     public function store(Request $request)
     {
-        $dados = $request->validate([
-            'item' => 'required|string|max:255',
+        $validated = $request->validate([
+            'item' => 'required|string|max:255', // Corrigido de 'nome'
             'quantidade' => 'required|integer|min:1',
             'valor_estimado' => 'nullable|numeric|min:0',
             'data_aquisicao' => 'nullable|date',
-            // CORREÇÃO: Validação do campo correto
-            'estado_conservacao' => 'required|in:Novo,Bom,Regular,Ruim,Inservível',
+            'estado_conservacao' => 'required|string', // Corrigido de 'estado'
             'local_armazenamento' => 'nullable|string|max:255',
-            'observacoes' => 'nullable|string',
+            'observacoes' => 'nullable|string', // Corrigido de 'descricao'
         ]);
 
-        Patrimonio::create($dados);
+        Patrimonio::create($validated);
 
-        return redirect()->route('patrimonio.index')->with('success', 'Item adicionado ao patrimônio!');
+        return redirect()->route('patrimonio.index')
+            ->with('success', 'Item de patrimônio cadastrado com sucesso!');
     }
 
     public function edit(Patrimonio $patrimonio)
@@ -62,26 +76,27 @@ class PatrimonioController extends Controller
 
     public function update(Request $request, Patrimonio $patrimonio)
     {
-        $dados = $request->validate([
+        $validated = $request->validate([
             'item' => 'required|string|max:255',
             'quantidade' => 'required|integer|min:1',
             'valor_estimado' => 'nullable|numeric|min:0',
             'data_aquisicao' => 'nullable|date',
-            // CORREÇÃO: Validação do campo correto
-            'estado_conservacao' => 'required|in:Novo,Bom,Regular,Ruim,Inservível',
+            'estado_conservacao' => 'required|string',
             'local_armazenamento' => 'nullable|string|max:255',
             'observacoes' => 'nullable|string',
         ]);
 
-        $patrimonio->update($dados);
+        $patrimonio->update($validated);
 
-        return redirect()->route('patrimonio.index')->with('success', 'Patrimônio atualizado!');
+        return redirect()->route('patrimonio.index')
+            ->with('success', 'Patrimônio atualizado com sucesso!');
     }
 
     public function destroy(Patrimonio $patrimonio)
     {
         $patrimonio->delete();
 
-        return redirect()->route('patrimonio.index')->with('success', 'Item baixado do patrimônio.');
+        return redirect()->route('patrimonio.index')
+            ->with('success', 'Item removido do inventário.');
     }
 }
