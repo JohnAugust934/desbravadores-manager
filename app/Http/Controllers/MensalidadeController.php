@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mensalidade;
-use App\Models\Desbravador;
 use App\Models\Caixa;
-use Illuminate\Http\Request;
+use App\Models\Desbravador;
+use App\Models\Mensalidade;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MensalidadeController extends Controller
@@ -19,19 +19,21 @@ class MensalidadeController extends Controller
         $mes = $request->input('mes', date('m'));
         $ano = $request->input('ano', date('Y'));
 
-        // Carrega mensalidades do mês selecionado
-        $mensalidades = Mensalidade::with('desbravador')
+        // OTIMIZAÇÃO: Eager Loading com 'desbravador.unidade' para evitar N+1
+        // e permitir exibir a unidade na listagem sem custo de performance.
+        $mensalidades = Mensalidade::with(['desbravador.unidade'])
             ->where('mes', $mes)
             ->where('ano', $ano)
-            ->get();
+            ->get()
+            ->sortBy('desbravador.nome'); // Ordenação via Collection para manter performance
 
-        // Cálculos do Mês
+        // Cálculos do Mês (Feitos na coleção carregada para evitar novas queries)
         $valorRecebido = $mensalidades->where('status', 'pago')->sum('valor');
         $valorPendente = $mensalidades->where('status', 'pendente')->sum('valor');
         $totalPago = $mensalidades->where('status', 'pago')->count();
         $totalPendente = $mensalidades->where('status', 'pendente')->count();
 
-        // Cálculo de Inadimplência Histórica (Dívida total acumulada de meses anteriores)
+        // Cálculo de Inadimplência Histórica (Query separada necessária pois olha para todo o histórico)
         $totalInadimplenteGeral = Mensalidade::inadimplentes()->sum('valor');
         $qtdInadimplentes = Mensalidade::inadimplentes()->count();
 
@@ -59,7 +61,8 @@ class MensalidadeController extends Controller
             'valor' => 'required|numeric|min:0',
         ]);
 
-        $desbravadores = Desbravador::all();
+        // Apenas desbravadores ativos devem receber cobrança
+        $desbravadores = Desbravador::where('ativo', true)->get();
         $count = 0;
 
         foreach ($desbravadores as $dbv) {
@@ -69,7 +72,7 @@ class MensalidadeController extends Controller
                 ->where('ano', $request->ano)
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 Mensalidade::create([
                     'desbravador_id' => $dbv->id,
                     'mes' => $request->mes,
@@ -106,8 +109,9 @@ class MensalidadeController extends Controller
 
             // 2. Lança Entrada no Caixa
             Caixa::create([
-                'descricao' => "Mensalidade " . str_pad($mensalidade->mes, 2, '0', STR_PAD_LEFT) . "/" . $mensalidade->ano . " - " . $mensalidade->desbravador->nome,
+                'descricao' => 'Mensalidade '.str_pad($mensalidade->mes, 2, '0', STR_PAD_LEFT).'/'.$mensalidade->ano.' - '.$mensalidade->desbravador->nome,
                 'tipo' => 'entrada',
+                'categoria' => 'Mensalidade', // Adicionando categoria automaticamente
                 'valor' => $mensalidade->valor,
                 'data_movimentacao' => Carbon::now(),
             ]);

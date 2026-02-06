@@ -9,13 +9,17 @@ class CaixaController extends Controller
 {
     public function index()
     {
-        // Totais Gerais (Para os Widgets)
-        $entradas = Caixa::where('tipo', 'entrada')->sum('valor');
-        $saidas = Caixa::where('tipo', 'saida')->sum('valor');
+        // Otimização: Se houver relacionamentos futuros (ex: 'criado_por', 'categoria'),
+        // adicione dentro do array with([]) para evitar queries N+1.
+        $query = Caixa::query()->with([]);
+
+        // Totais (Calculados no banco para performance)
+        $entradas = (clone $query)->where('tipo', 'entrada')->sum('valor');
+        $saidas = (clone $query)->where('tipo', 'saida')->sum('valor');
         $saldoAtual = $entradas - $saidas;
 
-        // Lista Paginada (Para a Tabela)
-        $lancamentos = Caixa::orderBy('data_movimentacao', 'desc')
+        // Listagem Paginada
+        $lancamentos = $query->orderBy('data_movimentacao', 'desc')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -29,17 +33,18 @@ class CaixaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validado = $request->validate([
             'descricao' => 'required|string|max:255',
             'valor' => 'required|numeric|min:0.01',
             'tipo' => 'required|in:entrada,saida',
             'data_movimentacao' => 'required|date',
-            'categoria' => 'nullable|string',
+            'categoria' => 'nullable|string|max:100',
         ]);
 
-        Caixa::create($request->all());
+        // Garante que o valor seja salvo corretamente (se vier formatado pt-BR, precisaria tratar aqui)
+        Caixa::create($validado);
 
         return redirect()->route('caixa.index')
-            ->with('success', 'Lançamento realizado com sucesso!');
+            ->with('success', 'Movimentação registrada com sucesso!');
     }
 }
