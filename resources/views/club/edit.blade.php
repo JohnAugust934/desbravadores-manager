@@ -1,108 +1,148 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Perfil do Clube') }}
+        <h2 class="font-semibold text-xl text-dbv-blue dark:text-gray-100 leading-tight">
+            {{ __('Meu Clube') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <section>
-                        <header>
-                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                {{ __('Informações do Clube') }}
-                            </h2>
-                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Atualize o brasão e os dados principais do seu clube.
-                            </p>
-                        </header>
+            {{-- Card Principal --}}
+            <div
+                class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow-lg sm:rounded-xl border border-gray-100 dark:border-gray-700">
 
-                        @if (session('success'))
-                        <div class="mt-4 p-4 font-medium text-sm text-green-600 bg-green-100 rounded-lg border border-green-200">
-                            {{ session('success') }}
-                        </div>
-                        @endif
+                <header class="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        {{ __('Informações Gerais') }}
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Mantenha os dados do seu clube e o brasão oficial atualizados.
+                    </p>
+                </header>
 
-                        <div class="mt-6 space-y-6">
+                {{-- Formulário de Edição --}}
+                <form id="update-club-form" method="post" action="{{ route('club.update') }}"
+                    enctype="multipart/form-data" class="space-y-8">
+                    @csrf
+                    @method('patch')
 
-                            <div>
-                                <x-input-label for="logo" :value="__('Brasão do Clube')" />
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-                                <div class="mt-2 flex items-start gap-6">
-                                    <div class="shrink-0 relative group">
-                                        @if($club->logo)
-                                        <img class="h-24 w-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
-                                            src="{{ asset('storage/' . $club->logo) }}"
-                                            alt="Logo atual" />
-                                        @else
-                                        <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-sm text-gray-400">
-                                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        @endif
-                                    </div>
+                        {{-- Coluna 1: Identidade Visual (Brasão) --}}
+                        <div class="col-span-1 flex flex-col items-center md:items-start space-y-4">
+                            <span
+                                class="block font-medium text-sm text-gray-700 dark:text-gray-300">{{ __('Brasão Oficial') }}</span>
 
-                                    <div class="flex-1">
-                                        <form id="update-club-form" method="post" action="{{ route('club.update') }}" enctype="multipart/form-data">
-                                            @csrf
-                                            @method('patch')
-
-                                            <input type="file" name="logo" id="logo" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" />
-                                            <p class="mt-1 text-xs text-gray-500">PNG, JPG ou GIF (Max. 2MB)</p>
-                                        </form>
-
-                                        @if($club->logo)
-                                        <form method="POST" action="{{ route('club.logo.destroy') }}" class="mt-3">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-sm text-red-600 hover:text-red-900 font-medium flex items-center gap-1 transition-colors" onclick="return confirm('Tem certeza que deseja remover o brasão?');">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Remover Brasão Atual
-                                            </button>
-                                        </form>
-                                        @endif
-                                    </div>
+                            <div class="relative group">
+                                <div
+                                    class="h-32 w-32 rounded-full overflow-hidden border-4 border-gray-100 dark:border-gray-700 shadow-md bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                                    @if ($club->logo)
+                                        <img src="{{ asset('storage/' . $club->logo) }}" alt="Brasão do Clube"
+                                            class="h-full w-full object-cover">
+                                    @else
+                                        <svg class="h-12 w-12 text-gray-300 dark:text-gray-600" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                    @endif
                                 </div>
-                                <x-input-error class="mt-2" :messages="$errors->get('logo')" />
+
+                                {{-- Botão de Upload Escondido sobre a imagem (opcional) ou input abaixo --}}
+                            </div>
+
+                            <div class="w-full max-w-xs">
+                                <label class="block">
+                                    <span class="sr-only">Escolher brasão</span>
+                                    <input type="file" name="logo" id="logo"
+                                        class="block w-full text-sm text-gray-500 dark:text-gray-400
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-full file:border-0
+                                        file:text-xs file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        dark:file:bg-blue-900/30 dark:file:text-blue-300
+                                        hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50
+                                        cursor-pointer transition-colors" />
+                                </label>
+                                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500 text-center md:text-left">
+                                    PNG, JPG ou GIF (Max. 2MB)
+                                </p>
+                                <x-input-error class="mt-2 text-center md:text-left" :messages="$errors->get('logo')" />
                             </div>
                         </div>
 
-                        <div class="mt-6">
-                            <div class="space-y-6">
-                                <div>
-                                    <x-input-label for="nome" :value="__('Nome do Clube')" />
-                                    <input form="update-club-form" id="nome" name="nome" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" value="{{ old('nome', $club->nome) }}" required />
-                                    <x-input-error class="mt-2" :messages="$errors->get('nome')" />
-                                </div>
+                        {{-- Coluna 2 e 3: Dados Cadastrais --}}
+                        <div class="col-span-1 md:col-span-2 space-y-5">
 
+                            {{-- Nome do Clube --}}
+                            <div>
+                                <x-input-label for="nome" :value="__('Nome do Clube *')" />
+                                <x-text-input id="nome" name="nome" type="text" class="mt-1 block w-full"
+                                    :value="old('nome', $club->nome)" required autofocus autocomplete="organization" />
+                                <x-input-error class="mt-2" :messages="$errors->get('nome')" />
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                {{-- Cidade --}}
                                 <div>
-                                    <x-input-label for="cidade" :value="__('Cidade')" />
-                                    <input form="update-club-form" id="cidade" name="cidade" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" value="{{ old('cidade', $club->cidade) }}" required />
+                                    <x-input-label for="cidade" :value="__('Cidade *')" />
+                                    <x-text-input id="cidade" name="cidade" type="text" class="mt-1 block w-full"
+                                        :value="old('cidade', $club->cidade)" required />
                                     <x-input-error class="mt-2" :messages="$errors->get('cidade')" />
                                 </div>
 
+                                {{-- Associação --}}
                                 <div>
                                     <x-input-label for="associacao" :value="__('Associação / Campo')" />
-                                    <input form="update-club-form" id="associacao" name="associacao" type="text" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" value="{{ old('associacao', $club->associacao) }}" />
+                                    <x-text-input id="associacao" name="associacao" type="text"
+                                        class="mt-1 block w-full" :value="old('associacao', $club->associacao)" placeholder="Ex: APO, APV..." />
                                     <x-input-error class="mt-2" :messages="$errors->get('associacao')" />
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4 mt-6">
-                                <x-primary-button form="update-club-form">{{ __('Salvar Alterações') }}</x-primary-button>
-                            </div>
                         </div>
+                    </div>
 
-                    </section>
-                </div>
+                    {{-- Rodapé com Ações --}}
+                    <div
+                        class="flex flex-col-reverse sm:flex-row items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        @if (session('success'))
+                            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+                                class="text-sm font-medium text-green-600 dark:text-green-400 mr-auto animate-pulse">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        <x-primary-button class="w-full sm:w-auto justify-center">
+                            {{ __('Salvar Alterações') }}
+                        </x-primary-button>
+                    </div>
+                </form>
+
+                {{-- Formulário Separado para Remoção de Logo (Só aparece se tiver logo) --}}
+                @if ($club->logo)
+                    <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
+                                <span class="font-medium text-red-500">Zona de Perigo:</span> Deseja remover o brasão
+                                atual e voltar ao padrão?
+                            </div>
+                            <form method="POST" action="{{ route('club.logo.destroy') }}">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-semibold underline decoration-transparent hover:decoration-red-600 transition-all"
+                                    onclick="return confirm('Tem certeza que deseja remover o brasão?');">
+                                    {{ __('Remover Brasão') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+
             </div>
-
         </div>
     </div>
 </x-app-layout>
